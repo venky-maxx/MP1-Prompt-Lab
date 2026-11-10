@@ -1,95 +1,114 @@
-# MP1 · Prompt Lab — Compare LLM Strategies on a Task
+# MP1: Prompt Strategy Lab
 
-> *Mini Project 1 · Week 5 deliverable · Foundations phase closing.
-> Doable in 3 days. Revision of W1-W5 skills via one integrative build.*
-
----
-
-## What this package contains
-
-### For learners
-
-| File | Purpose |
-|---|---|
-| `learner/MP1_Brief.md` | Project brief — what to build, in what shape, what to submit |
-| `learner/MP1_Starter_Template.ipynb` | Notebook skeleton with TODOs |
-| `learner/MP1_FAQ.md` | Anticipated questions + answers |
-| `data/job_snippets.jsonl` | 10 job postings (the task input) |
-| `data/golden_set.jsonl` | Reference extractions for scoring |
-| `requirements.txt` | Python dependencies |
-
-### For instructors / graders
-
-| File | Purpose |
-|---|---|
-| `instructor/MP1_Rubric.md` | Scoring rubric (1-4 scale, four dimensions) |
-| `instructor/MP1_Solution_Document.md` | Reference solution walk-through + expected numbers + what to look for |
-| `instructor/MP1_Reference_Solution.ipynb` | Complete working solution notebook |
-| `instructor/MP1_Reference_Solution.py` | Same as runnable script (for CI spot-checks) |
-| `instructor/MP1_Sample_Submission.md` | What a strong learner's writeup looks like |
+An end-to-end evaluation lab benchmarking four LLM prompting strategies—**Zero-Shot**, **Few-Shot**, **Structured / Role-Based**, and **Chain-of-Thought (CoT)**—on extracting structured profile data from job posting snippets.
 
 ---
 
-## At a glance
+## 📋 Task Overview
 
-- **Project:** Compare 4 prompting strategies (zero-shot, few-shot, structured, chain-of-thought) on a structured extraction task.
-- **Task:** Extract `company`, `role`, and `years_experience_required` from a job posting snippet.
-- **Inputs:** 10 job snippets (provided)
-- **Golden set:** 10 reference extractions (provided)
-- **Effort:** ~5-8 hours over 3 days
-- **Spend:** ~$0.05 to $0.20 on OpenAI API calls
-- **Submission:** Notebook + 1-page writeup
+The goal is to extract three specific target fields from 10 sample job posting snippets (ranging from clean to intentionally ambiguous text):
+* `company`: The hiring entity (String)
+* `role`: The target job title (String)
+* `years_experience_required`: Minimum experience required (Integer)
 
----
-
-## Where this fits in the curriculum
-
-MP1 sits at the **closing of Phase 1 (Foundations)** — the same week as M1 / DR #1.
-
-It's deliberately small. The point isn't to test new skills; it's to give learners one integrative build that touches everything they learned in W1-W5:
-
-| W1-W5 skill | How MP1 exercises it |
-|---|---|
-| W1 — System prompt leverage | The 4 strategies *are* 4 different prompting choices |
-| W2 — Async batch pipeline | Run 10 inputs × 4 strategies = 40 calls in parallel |
-| W3 — Clean code structure | Single notebook with logical section breaks |
-| W4 — Cost + latency tracking | Each strategy reports cost/latency for comparison |
-| W5 — Golden set + LLM judge | The scoring step uses the W5 judge pattern |
-
-No new concepts. No new tools. Just revision via integration.
+All strategies are evaluated under isolated conditions using `gpt-4o-mini` at `temperature=0.0` over **40 total asynchronous LLM calls** ($10 \text{ snippets} \times 4 \text{ strategies}$).
 
 ---
 
-## How to grade
+## 📁 Project Structure
 
-Open `instructor/MP1_Solution_Document.md` first — it walks through what a strong submission looks like, with expected numbers and common mistakes to watch for.
-
-Then use `instructor/MP1_Rubric.md` for the actual scoring. Four dimensions (Completion · Correctness · Reflection · Code Quality), each 1-4. Generous rubric — effort and clarity over perfection.
-
----
-
-## Where this lives in the cohort's repo
-
-```
-capstone-repo/
-├── (W1-W5 lab work)
-├── mp1/
-│   ├── mp1_prompt_lab.ipynb       # or .py
-│   ├── data/                       # symlink or copy of provided data
-│   └── mp1_writeup.md              # the 1-page reflection
-└── docs/
-    └── adr/0002-prompting-strategy.md   # optional ADR if they want one
+```text
+.
+├── data/
+│   ├── golden_set.jsonl      # Reference evaluation dataset (ideal extractions)
+│   └── job_snippets.jsonl    # Raw job posting snippets (10 test entries)
+├── docs/                     # Documentation & optional ADRs
+├── main/
+│   ├── comparison.md         # Final benchmark summary table across strategies
+│   ├── mp1_prompt_lab.ipynb  # Async pipeline (asyncio) executing evaluations & scoring
+│   └── mp1_writeup.md        # 1-page reflection answering lab questions
+├── .env                      # API keys (OPENAI_API_KEY)
+├── .gitignore                # Git ignore rules
+├── .python-version           # Python runtime version
+├── pyproject.toml            # Project configuration and metadata
+├── README.md                 # Main project setup and documentation
+├── requirements.txt          # Python dependencies
+└── uv.lock                   # Lockfile for reproducible environment (`uv`)
 ```
 
 ---
 
-## Constraints (locked by the curriculum)
+## ⚙️ Setup & Installation
 
-- **Vocareum-compatible** — runs in the cohort lab environment
-- **OpenAI API only** — no Anthropic, no local models in MP1
-- **Default model: gpt-4o-mini** — `gpt-4o` used only for the LLM-as-judge step
-- **British spelling** throughout cohort-facing docs
+### 1. Clone the Repository
+Clone the project repository to your local workspace and navigate into the project folder:
+```bash
+git clone https://github.com/venky-maxx/MP1-Prompt-Lab.git
+cd MP1-Prompt-Lab
+```
+
+### 2. Prerequisites
+* Python 3.14.7
+* An active OpenAI API Key
+
+### 3. Installation
+
+Using **`uv`** (Recommended):
+```bash
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install -r requirements.txt
+```
+
+Using standard **`pip`**:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 4. Environment Setup
+Add your OpenAI API key to `.env` in the root folder:
+```env
+OPENAI_API_KEY=your-actual-api-key
+```
 
 ---
 
-*Six mini projects total across the 30-week programme. MP1 sits here, in W5.*
+## 🚀 Running the Pipeline in VS Code (Jupyter Kernel)
+
+1. Open the project folder in **VS Code**:
+   ```bash
+   code .
+   ```
+2. Open the notebook at `main/mp1_prompt_lab.ipynb`.
+3. **Select the Jupyter Kernel:**
+   * Click **Select Kernel** in the top right corner of the notebook editor (or press `Ctrl+Shift+P` / `Cmd+Shift+P` and choose **Jupyter: Select Interpreter to Start Jupyter Server**).
+   * Choose your active virtual environment (`.venv` or `venv`) created during setup.
+4. **Execute the Notebook:**
+   * Click **Run All** at the top of the notebook UI (or use `Ctrl+Shift+Alt+Enter` / `Cmd+Shift+Alt+Enter`).
+   * Alternatively, run cells sequentially from top to bottom.
+
+The pipeline asynchronously executes $40 \text{ total calls}$ ($10 \text{ snippets} \times 4 \text{ strategies}$) using `asyncio`, benchmarking extraction results against `data/golden_set.jsonl`.
+
+---
+
+## 💡 Interpreting Results
+
+Upon completing the notebook execution, review your outputs based on the following key metrics:
+
+* **Accuracy (0 to 3):** Measures deterministic exact matching (case-insensitive, trimmed) against the ground-truth fields:
+  * `company`: The hiring organization name
+  * `role`: Target job title
+  * `years_experience_required`: Integer value of required experience
+* **Parse Rate (`parse_success`):** Percentage indicating whether the model returned valid, parsable JSON without syntax errors or Markdown block formatting issues.
+* **LLM-as-Judge Score (1 to 25):** Evaluated via `gpt-4o` to assess qualitative correctness and context resolution (especially for ambiguous or informal snippets).
+* **Latency (p50):** The median response time (seconds) per strategy. Look for latency inflation in **Chain-of-Thought (CoT)** due to extra reasoning tokens.
+* **Cost ($):** Total API token spending per strategy. Evaluate whether the accuracy gains of Few-Shot or CoT justify their higher token overhead compared to Zero-Shot.
+---
+
+## 📖 Deliverables & Documentation
+
+* **[`main/mp1_prompt_lab.ipynb`](./main/mp1_prompt_lab.ipynb):** End-to-end execution notebook.
+* **[`main/comparison.md`](./main/comparison.md):** Results and performance comparison matrix.
+* **[`main/mp1_writeup.md`](./main/mp1_writeup.md):** 1-page technical reflection answering strategy choices, unexpected failures, and capstone applications.
